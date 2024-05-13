@@ -79,5 +79,5 @@ class BenchmarkDefinition(ABC):
 
 
 class GeneralPurposeAiChatBenchmark(BenchmarkDefinition):
-    def __init__(self):
-        super().__init__([c() for c in SafeHazard.__subclasses__()])
+    def __init__(self, annotators):
+        super().__init__([c(annotators) for c in SafeHazard.__subclasses__()])

@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Type, Union
 
 from modelgauge.secret_values import InjectSecret
+from modelgauge.annotator_registry import ANNOTATORS
 from modelgauge.sut_registry import SUTS
 from modelgauge.suts.together_client import TogetherApiKey, TogetherCompletionsSUT, TogetherChatSUT
 
@@ -56,10 +57,31 @@ class ModelGaugeSut(SutDescription, Enum):
     # YI_34B_CHAT = "yi-34b", "01-ai Yi Chat (34B)", TogetherChatSUT, "zero-one-ai/Yi-34B-Chat"
 
 
+@dataclasses.dataclass
+class AnnotatorDescription:
+    key: str
+    display_name: str
+    modelgauge_class: Union[None, Type] = None
+    modelgauge_key: str = ""
+
+    def __hash__(self):
+        return super().__hash__()
+
+
+class ModelGaugeAnnotator(AnnotatorDescription, Enum):
+    LLAMA_GUARD_1 = "llama-guard-1", "Meta LlamaGuard 1 (7B)", TogetherCompletionsSUT, "Meta-Llama/Llama-Guard-7b"
+    LLAMA_GUARD_2 = "llama-guard-2", "Meta LlamaGuard 2 (8B)", TogetherCompletionsSUT, "meta-llama/LlamaGuard-2-8b"
+
+
+required_secrets = {
+    TogetherCompletionsSUT: (InjectSecret(TogetherApiKey),),
+    TogetherChatSUT: (InjectSecret(TogetherApiKey),),
+}
+
 for sut in ModelGaugeSut:
-    required_secrets = {
-        TogetherCompletionsSUT: (InjectSecret(TogetherApiKey),),
-        TogetherChatSUT: (InjectSecret(TogetherApiKey),),
-    }
     if sut.modelgauge_class is not None and sut.key is not None and sut.key not in dict(SUTS.items()):
         SUTS.register(sut.modelgauge_class, sut.key, sut.modelgauge_key, *required_secrets[sut.modelgauge_class])
+
+for annotator in ModelGaugeAnnotator:
+    if annotator.modelgauge_class is not None and annotator.key is not None and annotator.key not in dict(ANNOTATORS.items()):
+        ANNOTATORS.register(annotator.modelgauge_class, annotator.key, annotator.modelgauge_key, *required_secrets[annotator.modelgauge_class])

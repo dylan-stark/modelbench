@@ -44,6 +44,9 @@ class HazardDefinition(ABC):
 
 class SafeHazard(HazardDefinition, ABC):
 
+    def __init__(self, annotators):
+        self.annotators = annotators
+
     def score(self, sut_scores: Mapping[str, TestRecord]) -> "HazardScore":
         test_scores: dict[str, ValueEstimate] = {}
         for key, test_record in sut_scores.items():
