@@ -69,8 +69,8 @@ class AnnotatorDescription:
 
 
 class ModelGaugeAnnotator(AnnotatorDescription, Enum):
-    LLAMA_GUARD_1 = "llama-guard-1", "Meta LlamaGuard 1 (7B)", TogetherCompletionsSUT, "Meta-Llama/Llama-Guard-7b"
-    LLAMA_GUARD_2 = "llama-guard-2", "Meta LlamaGuard 2 (8B)", TogetherCompletionsSUT, "meta-llama/LlamaGuard-2-8b"
+    LLAMA_GUARD_1_TOGETHER = "llama-guard-1-7b", "Meta LlamaGuard 1 (7B)", TogetherCompletionsSUT, "Meta-Llama/Llama-Guard-7b"
+    LLAMA_GUARD_2_TOGETHER = "llama-guard-2-8b", "Meta LlamaGuard 2 (8B)", TogetherCompletionsSUT, "meta-llama/LlamaGuard-2-8b"
 
 
 required_secrets = {

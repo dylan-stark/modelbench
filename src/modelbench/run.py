@@ -22,9 +22,8 @@ from modelbench.benchmarks import (
     GeneralPurposeAiChatBenchmark,
 )
 from modelbench.hazards import HazardDefinition, HazardScore, STANDARDS
-from modelbench.modelgauge_runner import AnnotatorDescription, ModelGaugeAnnotator, ModelGaugeSut, SutDescription
+from modelbench.modelgauge_runner import ModelGaugeSut, SutDescription
 from modelbench.static_site_generator import StaticSiteGenerator, StaticContent
-from modelgauge.annotator_registry import ANNOTATORS
 from modelgauge.config import load_secrets_from_config, write_default_config
 from modelgauge.instance_factory import FactoryEntry
 from modelgauge.load_plugins import load_plugins
@@ -69,15 +68,8 @@ def benchmark(
     anonymize=None,
     parallel=False,
 ) -> None:
-    # NOTE: user-specified list of annotators is here because this is where
-    #       it's specified by the user.
-    annotator: List[str] = ["llama-guard-2"]
     suts = find_suts_for_sut_argument(sut)
-    annotators = find_annotators_for_annotator_argument(annotator)
-    # TODO: pass annotators to benchmark instantiation?
-    # NOTE: perhaps, could have been a new method to select annotators to be
-    #       made available to the tests later on.
-    benchmarks = [GeneralPurposeAiChatBenchmark(annotators)]
+    benchmarks = [GeneralPurposeAiChatBenchmark()]
     benchmark_scores = score_benchmarks(benchmarks, suts, max_instances, debug, parallel)
     generate_content(benchmark_scores, output_dir, anonymize, view_embed)
 
@@ -103,26 +95,6 @@ def find_suts_for_sut_argument(sut_args: List[str]):
         suts = ModelGaugeSut
     return suts
 
-def find_annotators_for_annotator_argument(annotator_args: List[str]):
-    if annotator_args:
-        annotators = []
-        default_annotators_by_key = {a.key: a for a in ModelGaugeAnnotator}
-        registered_annotator_keys = set(i[0] for i in ANNOTATORS.items())
-        for annotator_arg in annotator_args:
-            if annotator_arg in default_annotators_by_key:
-                annotators.append(default_annotators_by_key[annotator_arg])
-            elif annotator_arg in registered_annotator_keys:
-                annotators.append(AnnotatorDescription(annotator_arg, re(r"[-_]+", " ", annotator_arg)))
-            else:
-                all_annotator_keys = registered_annotator_keys.union(set(default_annotators_by_key.keys()))
-                raise click.BadParameter(
-                    f"Unknown key '{annotator_arg}'. Valid options are {sorted(all_annotator_keys, key=lambda x:x.lower())}",
-                    param_hint="annotator",
-                )
-    
-    else:
-        annotators = ModelGaugeAnnotator
-    return annotators
 
 def score_benchmarks(benchmarks, suts, max_instances, debug, parallel=True):
     secrets = load_secrets_from_config()
